@@ -1,40 +1,43 @@
 ---
-- name: Setup Kubernetes Hosts
-  include_tasks: initial/main.yml
-  when:
-    - k8s_node is defined
-    - k8s_node in [ "install_master", "become_master", "node" ]
+- name: Cleanup k3s
+  include_tasks: k3s-cleanup.yml
+  tags: [ never, cleanup ]
 
-- name: Deinstall other kubernetes-engines
-  include_tasks: cleanup/main.yml
-  when:
-    - k8s_node is defined
-    - k8s_node in [ "install_master", "become_master", "node" ]
+- name: Cleanup other kubernetes-engines
+  include_role:
+    name: "{{ item }}"
+    apply:
+      tags:
+        - cleanup
+  with_items:
+    - kube_02_install_k8s
+    - kube_02_install_minikube
+    - kube_02_install_rke
+  tags: [ nocleanup ]
+    
 
-- name: Install minikube-engine
-  include_tasks: engine_minikube/main.yml
-  when:
-    - k8s_node is defined
-    - k8s_node in [ "install_master", "become_master", "node" ]
-    - kubernetes_engine == "minikube"
+- name: Download k3s
+  include_tasks: k3s-download.yml
+  when: 
+    - serveNet_ip is defined
+    - kubernetes_engine == "k3s"
+  tags: [ download ]
 
-- name: Install vanilla kubernetes
-  include_tasks: engine_kubeadm/main.yml
-  when:
-    - k8s_node is defined
+- name: Create k3s-users
+  include_tasks: k3s-create_user.yml
+  when: 
     - k8s_node in [ "install_master", "become_master", "node" ]
-    - kubernetes_engine == "kubeadm"
+    - serveNet_ip is defined
+    - kubernetes_engine == "k3s"
 
-- name: Install rke-engine
-  include_tasks: engine_rke/main.yml
-  when:
-    - k8s_node is defined
-    - k8s_node in [ "install_master", "become_master", "node" ]
-    - kubernetes_engine == "rke"
+- name: Setup k3s-master
+  include_tasks: k3s-master.yml
+  when: 
+    - k8s_node == "install_master"
+    - kubernetes_engine == "k3s"
 
-- name: Install k3s-engine
-  include_tasks: engine_k3s/main.yml
-  when:
-    - k8s_node is defined
-    - k8s_node in [ "install_master", "become_master", "node" ]
+- name: Setup k3s-node
+  include_tasks: k3s-node.yml
+  when: 
+    - k8s_node in [ "become_master", "node" ]
     - kubernetes_engine == "k3s"
