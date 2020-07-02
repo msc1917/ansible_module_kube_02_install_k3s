@@ -1,0 +1,10 @@
+k3s:      { version: 'v1.17.0%2Bk3s.1',
+            os_user: { 
+              comment: "r3s User",
+              user: "k3s",
+              uid: 1197,
+              group: "k3s",
+              gid: 1197,
+              groups: [ "docker", "sudo-nopwd" ]
+              },
+            systemd_dir: '/etc/systemd/system' }
