@@ -14,7 +14,18 @@
     - kube_02_install_minikube
     - kube_02_install_rke
   tags: [ nocleanup ]
-    
+
+- name: Cleanup other kubernetes-engine-users
+  include_role:
+    name: "{{ item }}"
+    apply:
+      tags:
+        - cleanup
+  with_items:
+    - user_k8s
+    - user_minikube
+    - user_rke
+  tags: [ nocleanup ]    
 
 - name: Download k3s
   include_tasks: k3s-download.yml
@@ -22,13 +33,6 @@
     - serveNet_ip is defined
     - kubernetes_engine == "k3s"
   tags: [ download ]
-
-- name: Create k3s-users
-  include_tasks: k3s-create_user.yml
-  when: 
-    - k8s_node in [ "install_master", "become_master", "node" ]
-    - serveNet_ip is defined
-    - kubernetes_engine == "k3s"
 
 - name: Setup k3s-master
   include_tasks: k3s-master.yml
