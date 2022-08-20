@@ -3,7 +3,7 @@
   local_action: stat path="{{ inventory_dir }}/dynamic_vars/files/download/k3s/{{ k3s.version }}/k3s"
   run_once: true
   become: no
-  register: file_adm64
+  register: file_amd64
 
 - name: Check if k3s_linux-arm64 exitst
   local_action: stat path="{{ inventory_dir }}/dynamic_vars/files/download/k3s/{{ k3s.version }}/k3s-arm64"
@@ -26,4 +26,4 @@
     - https://github.com/rancher/k3s/releases/download/{{ k3s.version }}/k3s-arm64
     - https://github.com/rancher/k3s/releases/download/{{ k3s.version }}/k3s-armhf
   when:
-    - (not file_adm64.stat.exists) or (not file_arm64.stat.exists) or (not file_arm.stat.exists)
+    - (not file_amd64.stat.exists) or (not file_arm64.stat.exists) or (not file_arm.stat.exists)
